@@ -1,231 +1,1045 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- 브라우저 탭에 보이는 제목 -->
-  <title>[제품 이름] | 나만의 피지컬 AI</title>
-  <meta name="description" content="[제품 한 줄 소개]">
+  <title>OccuFan | 인원 연동 팬 제어 피지컬 AI</title>
+  <meta name="description" content="천장 카메라로 실내 인원을 세고, 인원만큼만 송풍기 풍량을 조절하는 엣지 AI 팬 제어 시스템">
 
-  <!-- 글꼴: Pretendard -->
+  <!-- 글꼴: Stitch 디자인(Space Grotesk · Geist · JetBrains Mono) + 한글용 Pretendard -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 
+  <!-- Tailwind + Stitch 디자인 토큰 (stitch/aeroflow.html과 같은 색·글자 크기) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    const KO = ["Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "sans-serif"];
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "background": "#081327", "surface": "#081327", "surface-bright": "#2f394f",
+            "surface-container-lowest": "#030e21", "surface-container-low": "#101b2f", "surface-container": "#152034",
+            "surface-container-high": "#1f2a3f", "surface-container-highest": "#2a354a", "surface-variant": "#2a354a",
+            "on-surface": "#d8e2fe", "on-surface-variant": "#b9cbc1", "outline": "#84958b", "outline-variant": "#3b4a43",
+            "primary": "#b9ffe0", "on-primary": "#003828", "primary-container": "#00f0b5", "on-primary-container": "#00684d",
+            "secondary": "#a5e7ff", "on-secondary": "#003543", "secondary-container": "#00d2ff",
+            "tertiary-fixed-dim": "#ffb955", "tertiary-container": "#ffcb87",
+            "error": "#ffb4ab", "error-container": "#93000a", "on-error-container": "#ffdad6"
+          },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+          spacing: {
+            "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "space-xl": "2.5rem",
+            "gutter": "1rem", "gutter-desktop": "1.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2.5rem"
+          },
+          fontFamily: {
+            "display": ["Space Grotesk", ...KO], "body": ["Geist", ...KO], "mono": ["JetBrains Mono", ...KO]
+          },
+          fontSize: {
+            "display-hero": ["56px", { lineHeight: "68px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "display-hero-mobile": ["36px", { lineHeight: "46px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg": ["32px", { lineHeight: "42px", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "headline-lg-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "500" }],
+            "body-lg": ["18px", { lineHeight: "30px" }],
+            "body-md": ["15px", { lineHeight: "25px" }],
+            "body-sm": ["13px", { lineHeight: "21px" }],
+            "label-numeric": ["16px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }],
+            "label-badge": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "600" }],
+            "label-mono-sm": ["11px", { lineHeight: "16px", letterSpacing: "0.04em" }]
+          }
+        }
+      }
+    };
+  </script>
   <style>
-    /* ===== 색상 설정: 이 값만 바꿔도 전체 분위기가 바뀝니다 ===== */
-    :root {
-      --bg: #F5F6F3;       /* 배경 */
-      --ink: #1E2422;      /* 기본 글자 */
-      --muted: #5E6764;    /* 보조 글자 */
-      --line: #D5D9D4;     /* 구분선 */
-      --accent: #F5C518;   /* 강조 색 */
-      --surface: #FFFFFF;  /* 이미지 영역 등 */
-    }
+    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    body { word-break: keep-all; }
+    .glass { background: rgba(19, 30, 50, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .grad-text { background: linear-gradient(90deg, #00f0b5, #00d2ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .grad-btn { background: linear-gradient(135deg, #00f0b5 0%, #00d2ff 100%); }
+    a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid #00f0b5; outline-offset: 3px; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* 팬 회전: 풍량이 클수록 빨리 돈다 (JS가 animation-duration을 바꿈) */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fan-spin { animation: spin 1.2s linear infinite; display: inline-block; }
+    @media (prefers-reduced-motion: reduce) { .fan-spin { animation: none; } html { scroll-behavior: auto; } }
 
-    body {
-      font-family: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.7;
-      word-break: keep-all;
-    }
+    /* 범위 슬라이더 (Stitch의 Fan Speed Slider 스타일) */
+    input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 999px; background: #060b14; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #081327; border: 3px solid #00f0b5; box-shadow: 0 0 0 4px rgba(0, 240, 181, 0.18); cursor: pointer; }
+    input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #081327; border: 3px solid #00f0b5; cursor: pointer; }
 
-    img { max-width: 100%; display: block; }
-    a { color: inherit; }
-    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-
-    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
-
-    /* ----- 상단 메뉴 ----- */
-    header { border-bottom: 1px solid var(--line); }
-    .nav {
-      display: flex; justify-content: space-between; align-items: center;
-      height: 64px;
-    }
-    .logo { font-weight: 800; font-size: 1.1rem; text-decoration: none; }
-    .nav ul { display: flex; gap: 24px; list-style: none; }
-    .nav ul a { text-decoration: none; color: var(--muted); font-size: 0.95rem; }
-    .nav ul a:hover { color: var(--ink); }
-
-    /* ----- 첫 화면 ----- */
-    .hero {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
-      align-items: center; padding: 88px 0;
-    }
-    .hero h1 {
-      font-size: clamp(2.6rem, 6vw, 4.2rem);
-      font-weight: 800; line-height: 1.1; letter-spacing: -0.03em;
-    }
-    .hero .tagline { margin-top: 20px; font-size: 1.2rem; color: var(--muted); max-width: 30em; }
-    .button {
-      display: inline-block; margin-top: 32px; padding: 14px 26px;
-      background: var(--ink); color: var(--bg);
-      text-decoration: none; font-weight: 600; border-radius: 999px;
-    }
-    .button:hover { background: #000; }
-
-    /* 제품 이미지 자리: 이미지를 넣으면 회색 안내 문구 대신 사진이 보입니다 */
-    .product-shot {
-      background: var(--accent);
-      border-radius: 24px;
-      padding: 28px;
-    }
-    .product-shot .frame {
-      aspect-ratio: 4 / 3;
-      background: var(--surface);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--muted); text-align: center; overflow: hidden;
-    }
-    .product-shot .frame img { width: 100%; height: 100%; object-fit: cover; }
-
-    /* ----- 공통 섹션 ----- */
-    section.block { padding: 80px 0; border-top: 1px solid var(--line); }
-    section.block h2 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
-    section.block .lead { color: var(--muted); max-width: 36em; font-size: 1.05rem; }
-
-    /* ----- 작동 방식: 감지 → 판단 → 행동 ----- */
-    .flow {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
-      margin-top: 40px; list-style: none; counter-reset: step;
-    }
-    .flow li {
-      padding: 0 28px 0 0; position: relative; counter-increment: step;
-    }
-    .flow li::before {
-      content: counter(step);
-      display: flex; align-items: center; justify-content: center;
-      width: 40px; height: 40px; margin-bottom: 18px;
-      border-radius: 50%; background: var(--accent);
-      font-weight: 800;
-    }
-    /* 단계 사이 연결선 */
-    .flow li:not(:last-child)::after {
-      content: ""; position: absolute; top: 20px; left: 52px; right: 12px;
-      height: 2px; background: var(--line);
-    }
-    .flow h3 { font-size: 1.2rem; margin-bottom: 6px; }
-    .flow p { color: var(--muted); }
-
-    /* ----- 주요 기능 ----- */
-    .features { margin-top: 40px; list-style: none; }
-    .features li {
-      display: grid; grid-template-columns: 220px 1fr; gap: 24px;
-      padding: 24px 0; border-bottom: 1px solid var(--line);
-    }
-    .features li:first-child { border-top: 1px solid var(--line); }
-    .features h3 { font-size: 1.15rem; }
-    .features p { color: var(--muted); }
-
-    /* ----- 만든 사람 / 하단 ----- */
-    footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 0.95rem; }
-    footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-
-    /* ----- 모바일 화면 ----- */
-    @media (max-width: 760px) {
-      .nav ul { display: none; }
-      .hero { grid-template-columns: 1fr; padding: 56px 0; gap: 36px; }
-      .flow { grid-template-columns: 1fr; gap: 32px; }
-      .flow li::after { display: none; }
-      .features li { grid-template-columns: 1fr; gap: 4px; }
-      section.block { padding: 56px 0; }
-    }
+    canvas.view { width: 100%; height: auto; aspect-ratio: 320 / 200; image-rendering: pixelated; border-radius: 0.5rem; background: #030e21; }
+    .tab[aria-selected="true"] { background: #00f0b5; color: #003828; }
   </style>
 </head>
-<body>
+<body class="bg-background font-body text-body-md text-on-surface antialiased">
 
-  <!-- ===== 상단 메뉴 ===== -->
-  <header>
-    <nav class="wrap nav">
-      <a class="logo" href="#">[제품 이름]</a>
-      <ul>
-        <li><a href="#problem">문제</a></li>
-        <li><a href="#how">작동 방식</a></li>
-        <li><a href="#features">기능</a></li>
-      </ul>
+<!-- ===== 상단 메뉴 ===== -->
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-white/5">
+  <div class="max-w-7xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop h-20 flex items-center justify-between">
+    <a class="flex items-center gap-space-sm group" href="#">
+      <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary group-hover:text-primary-container transition-colors">
+        <span class="material-symbols-outlined text-[22px]">mode_fan</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-display text-headline-sm tracking-tight leading-none">Occu<span class="text-primary-container">Fan</span></span>
+        <span class="font-mono text-label-mono-sm text-on-surface-variant tracking-widest uppercase mt-0.5">Occupancy-linked fan AI</span>
+      </div>
+    </a>
+    <nav class="hidden lg:flex items-center gap-space-xs">
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#problem">문제</a>
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#how">작동 방식</a>
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#vision">영상 전처리</a>
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#control">팬 제어</a>
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#metrics">성공 지표</a>
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#roi">ROI</a>
     </nav>
-  </header>
+    <a class="inline-flex items-center px-space-md sm:px-space-lg py-space-sm rounded-lg bg-primary text-on-primary font-display font-semibold hover:bg-primary-container transition-all shadow-[0_0_20px_rgba(0,240,181,0.2)]" href="#vision">데모 보기</a>
+  </div>
+</header>
 
-  <main>
-    <!-- ===== 첫 화면: 제품 이름과 한 줄 소개 ===== -->
-    <div class="wrap hero">
-      <div>
-        <h1>[제품 이름]</h1>
-        <p class="tagline">[제품을 한 문장으로 소개해 주세요. 누구에게 어떤 도움을 주는지 쓰면 좋습니다.]</p>
-        <a class="button" href="#how">작동 방식 보기</a>
+<main class="pt-20 overflow-x-hidden">
+
+  <!-- ===== 1. 첫 화면 ===== -->
+  <div class="relative">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] max-w-[100vw] h-[480px] bg-gradient-to-b from-primary-container/10 via-secondary-container/5 to-transparent blur-[120px] pointer-events-none"></div>
+    <section class="relative max-w-7xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop py-12 lg:py-20">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 flex flex-col items-start gap-space-md">
+          <div class="inline-flex flex-wrap items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-high/70 backdrop-blur-md">
+            <span class="w-2.5 h-2.5 rounded-full bg-primary-container animate-pulse shadow-[0_0_10px_#00F0B5]"></span>
+            <span class="font-mono text-label-badge text-primary-container uppercase">Physical AI × Ventilation</span>
+            <span class="font-mono text-label-mono-sm text-on-surface-variant">| Edge only · Raspberry Pi 5</span>
+          </div>
+          <h1 class="font-display text-display-hero-mobile md:text-display-hero">
+            사람 수만큼만<br><span class="grad-text">바람을 보낸다.</span>
+          </h1>
+          <p class="text-body-lg text-on-surface-variant max-w-2xl">
+            OccuFan은 천장 카메라 영상에서 실내 인원을 실시간으로 세고, 인원에 맞춰 송풍기 풍량을
+            <strong class="text-on-surface">30 · 50 · 75 · 100 %</strong> 네 단계로 자동 조절하는 엣지 AI 팬 제어 시스템입니다.
+            영상은 기기 안 메모리에서만 처리하고 곧바로 폐기합니다.
+          </p>
+          <div class="flex flex-wrap gap-space-md pt-space-sm">
+            <a class="inline-flex items-center gap-space-sm px-space-lg py-3 rounded-lg grad-btn text-on-primary-container font-display text-headline-sm font-semibold shadow-[0_0_30px_rgba(0,240,181,0.25)] hover:opacity-95" href="#vision">
+              <span class="material-symbols-outlined text-[20px]">image_search</span>영상 전처리 데모
+            </a>
+            <a class="inline-flex items-center gap-space-sm px-space-lg py-3 rounded-lg bg-surface-container-high/80 hover:text-primary-container hover:bg-surface-container-highest transition-all font-display text-headline-sm font-semibold" href="#control">
+              <span class="material-symbols-outlined text-[20px]">tune</span>팬 제어 시뮬레이터
+            </a>
+          </div>
+          <div class="pt-space-md grid grid-cols-3 gap-space-md w-full max-w-xl">
+            <div>
+              <div class="font-display text-headline-md text-primary font-bold">≤3<span class="font-mono text-label-mono-sm text-on-surface-variant ml-0.5">초</span></div>
+              <div class="font-mono text-label-mono-sm text-on-surface-variant">인원 변화 → 팬 지령</div>
+            </div>
+            <div>
+              <div class="font-display text-headline-md text-secondary font-bold">≥40<span class="font-mono text-label-mono-sm text-on-surface-variant ml-0.5">%</span></div>
+              <div class="font-mono text-label-mono-sm text-on-surface-variant">송풍기 전력 절감 목표</div>
+            </div>
+            <div>
+              <div class="font-display text-headline-md text-primary-container font-bold">0<span class="font-mono text-label-mono-sm text-on-surface-variant ml-0.5">건</span></div>
+              <div class="font-mono text-label-mono-sm text-on-surface-variant">저장·외부 전송 영상</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 실시간 상태 카드 (데모 값) -->
+        <div class="lg:col-span-5">
+          <div class="rounded-xl bg-surface-container-low/85 backdrop-blur-2xl p-space-lg shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative overflow-hidden border border-white/5">
+            <div class="absolute -top-12 -right-12 w-48 h-48 bg-primary-container/15 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="flex items-center justify-between gap-2 pb-space-md">
+              <div class="flex items-center gap-space-sm">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_#38ffc3]"></span>
+                <span class="font-mono text-label-mono-sm font-semibold">강의실 301 — LIVE (데모)</span>
+              </div>
+              <span class="font-mono text-label-mono-sm text-primary-container bg-surface-container-highest px-2 py-0.5 rounded">EDGE · ≥5 FPS</span>
+            </div>
+            <div class="bg-surface-container/70 rounded-lg p-space-md mb-space-md">
+              <div class="flex items-center justify-between mb-space-xs">
+                <span class="text-body-sm text-on-surface-variant">평활 인원 (최근 2초 중앙값)</span>
+                <span class="font-mono text-label-badge text-secondary uppercase bg-surface-variant/70 px-2 py-0.5 rounded">YOLO + ByteTrack</span>
+              </div>
+              <div class="flex items-baseline gap-space-sm">
+                <span class="font-display text-display-hero font-bold" id="hero-count">18</span>
+                <span class="font-display text-headline-sm text-on-surface-variant">명</span>
+                <span class="ml-auto font-mono text-label-mono-sm text-primary-container" id="hero-stage">2단계</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1 mt-space-sm" id="hero-steps">
+                <div class="h-2 rounded-full bg-primary-container"></div>
+                <div class="h-2 rounded-full bg-primary-container"></div>
+                <div class="h-2 rounded-full bg-primary-container"></div>
+                <div class="h-2 rounded-full bg-surface-container-high"></div>
+              </div>
+              <div class="flex justify-between font-mono text-label-mono-sm text-on-surface-variant mt-1.5">
+                <span>0–4명</span><span>5–14</span><span>15–24</span><span>25+</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-space-sm">
+              <div class="p-space-sm bg-surface-container/50 rounded-lg">
+                <div class="flex items-center gap-1 text-on-surface-variant mb-1 text-body-sm">
+                  <span class="material-symbols-outlined text-[16px] text-secondary">mode_fan</span>풍량 지령
+                </div>
+                <div class="font-display text-headline-md text-secondary font-bold"><span id="hero-pct">75</span><span class="font-mono text-label-mono-sm ml-1 text-on-surface">%</span></div>
+                <span class="font-mono text-label-mono-sm text-on-surface-variant">인버터 입력 <span id="hero-volt">7.5</span> V</span>
+              </div>
+              <div class="p-space-sm bg-surface-container/50 rounded-lg">
+                <div class="flex items-center gap-1 text-on-surface-variant mb-1 text-body-sm">
+                  <span class="material-symbols-outlined text-[16px] text-primary-container">energy_savings_leaf</span>송풍기 전력
+                </div>
+                <div class="font-display text-headline-md text-primary-container font-bold"><span id="hero-kw">3.16</span><span class="font-mono text-label-mono-sm ml-1 text-on-surface">kW</span></div>
+                <span class="font-mono text-label-mono-sm text-on-surface-variant">상시 100 % = 7.5 kW</span>
+              </div>
+            </div>
+            <p class="mt-space-md font-mono text-label-mono-sm text-on-surface-variant">카메라 → Pi 5 (YOLO nano · supervision) → MQTT → ESP32-S3 → 0–10 V → VFD</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== 2. 문제 정의 ===== -->
+  <section class="bg-surface-container-lowest py-16 lg:py-20" id="problem">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-primary font-mono text-label-badge uppercase mb-space-sm">Problem</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">사람이 있든 없든, 송풍기는 늘 100 %</h2>
+        <p class="text-on-surface-variant mt-space-sm">많은 건물의 송풍기(AHU·환기팬)는 고정 풍량으로 돕니다. 인원이 적으면 전력과 외기 냉난방 부하가 낭비되고, 인원이 몰리면 환기가 부족해 실내 공기질이 나빠집니다.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter-desktop">
+        <div class="rounded-xl bg-surface-container-low p-space-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-space-md">
+              <span class="px-space-sm py-1 rounded bg-error-container text-on-error-container font-mono text-label-badge uppercase">기존 방식</span>
+              <span class="material-symbols-outlined text-error">schedule</span>
+            </div>
+            <h3 class="font-display text-headline-md mb-space-sm">시간표 · CO₂ · PIR 기반 제어의 한계</h3>
+            <ul class="space-y-space-sm text-body-sm text-on-surface-variant">
+              <li class="flex gap-space-sm"><span class="material-symbols-outlined text-error text-[18px] mt-0.5">close</span><span><strong class="text-on-surface">시간표 운전:</strong> 실제 사용과 무관하게 정해진 시각에 돌아, 휴강·공실을 반영하지 못합니다.</span></li>
+              <li class="flex gap-space-sm"><span class="material-symbols-outlined text-error text-[18px] mt-0.5">close</span><span><strong class="text-on-surface">CO₂ 센서:</strong> 인원이 바뀐 뒤 농도가 변할 때까지 수 분 이상 늦게 반응합니다.</span></li>
+              <li class="flex gap-space-sm"><span class="material-symbols-outlined text-error text-[18px] mt-0.5">close</span><span><strong class="text-on-surface">인체 감지(PIR):</strong> '있다/없다'만 알 수 있어 인원 규모에 따른 단계 제어가 불가능합니다.</span></li>
+            </ul>
+          </div>
+          <div class="mt-space-lg p-space-sm rounded-lg bg-surface-container-high/60 flex items-center justify-between gap-2">
+            <span class="font-mono text-label-mono-sm text-error">운전 방식</span>
+            <span class="font-mono text-label-numeric text-error font-bold">고정 풍량 100 % 상시</span>
+          </div>
+        </div>
+        <div class="rounded-xl bg-surface-container p-space-lg shadow-[0_4px_24px_rgba(0,240,181,0.08)] flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/10 blur-xl pointer-events-none"></div>
+          <div>
+            <div class="flex items-center justify-between pb-space-md">
+              <span class="px-space-sm py-1 rounded bg-primary text-on-primary font-mono text-label-badge uppercase">OccuFan</span>
+              <span class="material-symbols-outlined text-primary-container">auto_awesome</span>
+            </div>
+            <h3 class="font-display text-headline-md mb-space-sm">인원을 '즉시' 세고, 필요한 만큼만 환기</h3>
+            <ul class="space-y-space-sm text-body-sm">
+              <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span><span><strong>즉시 반응:</strong> 영상에서 인원 수를 바로 계산해 3초 안에 팬 단계를 바꿉니다.</span></li>
+              <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span><span><strong>단계 제어:</strong> 인원 규모에 따라 4단계 풍량으로 송풍기 전력과 외기 부하를 줄입니다.</span></li>
+              <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span><span><strong>개인정보 부담 최소화:</strong> 영상 원본을 저장하거나 외부로 보내지 않고, 인원 '수'만 남깁니다.</span></li>
+            </ul>
+          </div>
+          <div class="mt-space-lg p-space-sm rounded-lg bg-surface-container-high/80 flex items-center justify-between gap-2">
+            <span class="font-mono text-label-mono-sm text-primary-container">운전 방식</span>
+            <span class="font-mono text-label-numeric text-primary-container font-bold">인원 연동 4단계</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-gutter-desktop rounded-xl glass p-space-lg grid grid-cols-1 md:grid-cols-12 gap-space-md items-center">
+        <div class="md:col-span-4 flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-secondary text-[28px]">psychology</span>
+          <h3 class="font-display text-headline-sm">왜 AI가 필요한가</h3>
+        </div>
+        <p class="md:col-span-8 text-body-sm text-on-surface-variant">사람을 세려면 영상 속 사람을 구분하고, 같은 사람을 중복 없이 이어서 봐야 합니다. 배경 차분 같은 규칙 기반 영상처리만으로는 조명 변화와 사람이 겹치는 상황에서 오차가 큽니다. 사람 검출 모델(YOLO 계열)과 추적·카운트 후처리(supervision)를 조합하면 현장 조건에서도 안정적으로 인원을 셀 수 있습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 작동 방식 ===== -->
+  <section class="py-16 lg:py-20" id="how">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-secondary font-mono text-label-badge uppercase mb-space-sm">Sense → Decide → Act</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">감지에서 송풍기 속도 지령까지</h2>
+        <p class="text-on-surface-variant mt-space-sm">카메라가 본 장면은 Raspberry Pi 5 안에서 인원 수로 바뀌고, 그 숫자가 ESP32-S3를 거쳐 인버터의 0–10 V 속도 입력이 됩니다.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop">
+        <div class="rounded-xl bg-surface-container-low p-space-lg">
+          <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-container font-mono font-bold mb-space-md">01</div>
+          <div class="font-mono text-label-mono-sm text-primary uppercase mb-1">감지 · Sensing</div>
+          <h3 class="font-display text-headline-sm mb-space-xs">천장 카메라 + 엣지 기기</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-md">Pi Camera Module 3(또는 USB 카메라)가 영상을 연속 촬영하고, Pi 5가 프레임을 메모리에서만 처리한 뒤 즉시 폐기합니다.</p>
+          <div class="p-space-xs rounded bg-surface-container font-mono text-label-mono-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">visibility_off</span>영상 저장·전송 0건</div>
+        </div>
+        <div class="rounded-xl bg-surface-container-low p-space-lg">
+          <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary font-mono font-bold mb-space-md">02</div>
+          <div class="font-mono text-label-mono-sm text-secondary uppercase mb-1">판단 · Decide</div>
+          <h3 class="font-display text-headline-sm mb-space-xs">사람 검출 → 추적 → 영역 카운트</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-md">YOLO nano가 사람을 찾고, supervision이 중복 박스 제거(NMS)·같은 사람 추적(ByteTrack)·방 영역 카운트(PolygonZone)를 처리합니다. 최근 2초 인원의 중앙값으로 흔들림을 줄입니다.</p>
+          <div class="p-space-xs rounded bg-surface-container font-mono text-label-mono-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-secondary">memory</span>ONNX Runtime · Pi 5 CPU</div>
+        </div>
+        <div class="rounded-xl bg-surface-container-low p-space-lg">
+          <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary font-mono font-bold mb-space-md">03</div>
+          <div class="font-mono text-label-mono-sm text-primary uppercase mb-1">행동 · Act</div>
+          <h3 class="font-display text-headline-sm mb-space-xs">인버터 0–10 V 속도 지령</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-md">결정된 팬 단계를 MQTT로 ESP32-S3에 보내면, ESP32-S3가 송풍기 인버터(VFD)에 해당 풍량의 속도 지령을 출력합니다. 통신이 끊기면 안전 단계로 동작합니다.</p>
+          <div class="p-space-xs rounded bg-surface-container font-mono text-label-mono-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">router</span>MQTT → ESP32-S3 → VFD</div>
+        </div>
       </div>
 
-      <div class="product-shot">
-        <div class="frame">
-          <!-- 이미지를 넣으려면 아래 문구를 지우고 이렇게 바꾸세요:
-               <img src="images/product.png" alt="제품 사진 설명"> -->
-          <span>제품 이미지 자리<br>images 폴더에 사진을 넣어 주세요</span>
+      <!-- 사용자 시나리오 -->
+      <div class="mt-space-xl">
+        <h3 class="font-display text-headline-md mb-space-md">사용자 시나리오</h3>
+        <ol class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-md">
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 1 · 설치</div><p class="text-body-sm text-on-surface-variant">관리자가 카메라와 Pi 5를 설치하고, ESP32-S3를 인버터 0–10 V 입력에 연결합니다. 대시보드에서 방 영역(다각형)과 단계 기준 인원을 설정합니다.</p></li>
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 2 · 데이터 수집</div><p class="text-body-sm text-on-surface-variant">카메라가 영상을 연속 촬영하고, 엣지 기기가 프레임을 메모리에서만 처리한 뒤 즉시 폐기합니다.</p></li>
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 3 · 분석</div><p class="text-body-sm text-on-surface-variant">AI 모델이 사람을 검출하고, 중복 박스 제거와 추적을 거쳐 방 영역 안의 인원 수를 계산합니다.</p></li>
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-secondary mb-1">STEP 4 · 판단</div><p class="text-body-sm text-on-surface-variant">최근 2초 인원을 중앙값으로 평활화하고, 기준표·히스테리시스·최소 유지시간 규칙으로 팬 단계를 정합니다.</p></li>
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-secondary mb-1">STEP 5 · 제어</div><p class="text-body-sm text-on-surface-variant">결정된 단계를 MQTT로 ESP32-S3에 보내고, ESP32-S3가 인버터에 속도 지령을 출력합니다.</p></li>
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-secondary mb-1">STEP 6 · 확인·후속</div><p class="text-body-sm text-on-surface-variant">대시보드에서 현재 인원, 팬 단계, 일별 전력 절감 추정치를 봅니다. 카메라 오류·인원 급변 시 알림을 받습니다.</p></li>
+        </ol>
+      </div>
+
+      <!-- 기술 스택 -->
+      <div class="mt-space-xl rounded-xl bg-surface-container-high/40 p-space-lg">
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-space-md">
+          <h3 class="font-display text-headline-md">기술 스택</h3>
+          <span class="font-mono text-label-mono-sm text-on-surface-variant">클라우드·API 비용 없이 현장에서 동작</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-sm font-mono text-label-mono-sm">
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">카메라</span><span class="text-right">Pi Camera Module 3 / USB</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">Edge AI</span><span class="text-right">Raspberry Pi 5 · ONNX Runtime</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">AI 모델</span><span class="text-right">YOLO nano (COCO person)</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">후처리</span><span class="text-right">supervision · NMS · ByteTrack · PolygonZone</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">MCU</span><span class="text-right">ESP32-S3 (Wi-Fi, 0–10 V 출력)</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">구동기</span><span class="text-right">인버터(VFD) 0–10 V 속도 입력</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">서버</span><span class="text-right">FastAPI (Pi 5 내부)</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">통신</span><span class="text-right">MQTT · WebSocket</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">DB</span><span class="text-right">SQLite (로컬 로그)</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">대시보드</span><span class="text-right">웹 페이지 (HTML + WebSocket)</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">알림</span><span class="text-right">이메일 / Slack Webhook</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">검증 센서</span><span class="text-right">CO₂ (NDIR, 제어엔 미사용)</span></div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- ===== 해결하려는 문제 ===== -->
-    <section class="block" id="problem">
-      <div class="wrap">
-        <h2>[어떤 문제를 해결하나요?]</h2>
-        <p class="lead">[사용자가 겪는 불편이나 문제를 2~3문장으로 설명해 주세요. 내 제품이 왜 필요한지가 드러나면 좋습니다.]</p>
+  <!-- ===== 4. 영상 전처리와 인원 인식 정확도 ===== -->
+  <section class="bg-surface-container-lowest py-16 lg:py-20" id="vision">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-primary-container font-mono text-label-badge uppercase mb-space-sm">Image Preprocessing</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">영상 전처리가 인원 인식 정확도를 지킨다</h2>
+        <p class="text-on-surface-variant mt-space-sm">사람 검출은 YOLO가 맡지만, 그 앞뒤에서 고전 영상처리가 조명·노이즈를 걸러 내고 연산을 아껴 줍니다. 아래 데모는 합성한 천장 시점 강의실 이미지에 <strong class="text-on-surface">흑백 변환 → 블러 → 이진화 → 침식·팽창 → 엣지</strong>를 차례로 적용하며, 단계마다 '사람 덩어리' 수가 실제 인원에 얼마나 가까워지는지 보여 줍니다.</p>
       </div>
-    </section>
 
-    <!-- ===== 작동 방식: 피지컬 AI의 감지 → 판단 → 행동 ===== -->
-    <section class="block" id="how">
-      <div class="wrap">
-        <h2>이렇게 작동합니다</h2>
-        <p class="lead">[제품이 현실 세계에서 어떻게 움직이는지 간단히 소개해 주세요.]</p>
+      <!-- 인터랙티브 데모 -->
+      <div class="rounded-xl bg-surface-container-low p-space-md md:p-space-lg border border-white/5">
+        <div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-md">
+          <div class="flex items-center gap-space-sm">
+            <span class="font-display text-headline-sm">전처리 파이프라인 데모</span>
+            <span class="font-mono text-label-mono-sm text-primary-container bg-surface-container-high px-2 py-1 rounded">브라우저에서 직접 계산</span>
+          </div>
+          <button class="px-space-md py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest font-mono text-label-badge uppercase flex items-center gap-1.5" id="vd-new" type="button">
+            <span class="material-symbols-outlined text-[16px] text-primary-container">casino</span>새 장면
+          </button>
+        </div>
 
-        <ol class="flow">
-          <li>
-            <h3>감지</h3>
-            <p>[어떤 센서로 무엇을 알아차리나요?]</p>
-          </li>
-          <li>
-            <h3>판단</h3>
-            <p>[AI가 어떤 정보를 보고 무엇을 결정하나요?]</p>
-          </li>
-          <li>
-            <h3>행동</h3>
-            <p>[결정에 따라 어떻게 움직이거나 반응하나요?]</p>
-          </li>
-        </ol>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop">
+          <div class="lg:col-span-7">
+            <div class="flex flex-wrap gap-1 mb-space-sm" role="tablist" id="vd-tabs"></div>
+            <canvas class="view" id="vd-canvas" width="320" height="200" aria-label="전처리 단계별 결과 이미지"></canvas>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md mt-space-md">
+              <label class="block">
+                <span class="flex justify-between font-mono text-label-mono-sm text-on-surface-variant mb-1">센서 노이즈 <span id="vd-noise-v">60%</span></span>
+                <input type="range" id="vd-noise" min="0" max="100" value="60">
+              </label>
+              <label class="block">
+                <span class="flex justify-between font-mono text-label-mono-sm text-on-surface-variant mb-1">조명 불균일 <span id="vd-light-v">60%</span></span>
+                <input type="range" id="vd-light" min="0" max="100" value="60">
+              </label>
+              <div>
+                <span class="block font-mono text-label-mono-sm text-on-surface-variant mb-1">이진화 방식</span>
+                <div class="flex rounded-lg bg-surface-container p-1 gap-1" role="group">
+                  <button type="button" class="tab flex-1 rounded px-2 py-1 text-body-sm" data-mode="adaptive" aria-selected="true">적응형</button>
+                  <button type="button" class="tab flex-1 rounded px-2 py-1 text-body-sm" data-mode="global" aria-selected="false">전역(오츠)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 flex flex-col gap-space-md">
+            <div class="rounded-lg bg-surface-container p-space-md">
+              <div class="font-mono text-label-badge text-primary-container uppercase mb-1" id="vd-step-tag">STEP 0</div>
+              <h3 class="font-display text-headline-sm mb-space-xs" id="vd-step-title">원본</h3>
+              <p class="text-body-sm text-on-surface-variant" id="vd-step-desc"></p>
+              <code class="block mt-space-sm font-mono text-label-mono-sm text-secondary bg-surface-container-lowest rounded px-2 py-1.5 whitespace-pre-wrap break-all" id="vd-step-code"></code>
+            </div>
+            <div class="rounded-lg bg-surface-container p-space-md">
+              <div class="flex items-baseline justify-between mb-space-sm">
+                <span class="font-display text-headline-sm">단계별 카운트</span>
+                <span class="font-mono text-label-mono-sm text-on-surface-variant">실제 인원 <strong class="text-on-surface" id="vd-truth">0</strong>명</span>
+              </div>
+              <div class="space-y-space-sm" id="vd-bars"></div>
+              <p class="mt-space-sm font-mono text-label-mono-sm text-on-surface-variant">면적 20px 이상인 흰 덩어리 하나 = 사람 한 명으로 셈. 점선 = 실제 인원.</p>
+            </div>
+          </div>
+        </div>
+        <p class="mt-space-md text-body-sm text-on-surface-variant">※ 원리를 보여 주는 합성 데모입니다. 실제 OccuFan의 인원 수는 YOLO 검출 + ByteTrack 추적 결과로 계산하고, 아래 전처리는 이를 안정화하는 보조 역할을 합니다.</p>
       </div>
-    </section>
 
-    <!-- ===== 주요 기능: 항목을 복사해서 늘리거나 지워도 됩니다 ===== -->
-    <section class="block" id="features">
-      <div class="wrap">
-        <h2>주요 기능</h2>
-
-        <ul class="features">
-          <li>
-            <h3>[기능 1]</h3>
-            <p>[기능 설명]</p>
-          </li>
-          <li>
-            <h3>[기능 2]</h3>
-            <p>[기능 설명]</p>
-          </li>
-          <li>
-            <h3>[기능 3]</h3>
-            <p>[기능 설명]</p>
-          </li>
-        </ul>
+      <!-- 단계별 설명 카드 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter-desktop mt-gutter-desktop">
+        <article class="rounded-xl bg-surface-container p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <span class="material-symbols-outlined text-primary-container text-[28px]">filter_b_and_w</span>
+            <span class="font-mono text-label-mono-sm text-on-surface-variant">cv2.cvtColor(…, GRAY)</span>
+          </div>
+          <h3 class="font-display text-headline-sm mb-space-xs">1. 흑백 변환</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-sm">RGB 3채널을 밝기 1채널로 바꿉니다. 처리할 데이터가 1/3로 줄어듭니다.</p>
+          <p class="text-body-sm"><strong class="text-primary-container">인식 효과</strong> · 옷 색과 조명 색온도 차이에 덜 흔들리고, 움직임 감지(프레임 차분) 같은 뒤 단계가 가벼워져 Pi 5 CPU에서 5 FPS 이상을 지키는 데 도움을 줍니다.</p>
+        </article>
+        <article class="rounded-xl bg-surface-container p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <span class="material-symbols-outlined text-secondary text-[28px]">blur_on</span>
+            <span class="font-mono text-label-mono-sm text-on-surface-variant">cv2.GaussianBlur(…, (5,5))</span>
+          </div>
+          <h3 class="font-display text-headline-sm mb-space-xs">2. 블러</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-sm">주변 픽셀과 가중 평균을 내어 이미지를 부드럽게 만듭니다.</p>
+          <p class="text-body-sm"><strong class="text-secondary">인식 효과</strong> · 저조도 센서 노이즈와 바닥 무늬가 이진화 뒤 '가짜 사람 점'으로 남는 것을 줄여, 인원을 실제보다 많이 세는 오류를 낮춥니다.</p>
+        </article>
+        <article class="rounded-xl bg-surface-container p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <span class="material-symbols-outlined text-primary text-[28px]">contrast</span>
+            <span class="font-mono text-label-mono-sm text-on-surface-variant">cv2.adaptiveThreshold</span>
+          </div>
+          <h3 class="font-display text-headline-sm mb-space-xs">3. 이진화</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-sm">기준보다 어두우면 흰색(사람 후보), 아니면 검은색(배경)으로 나눠 마스크를 만듭니다.</p>
+          <p class="text-body-sm"><strong class="text-primary">인식 효과</strong> · 덩어리 단위로 셀 수 있게 됩니다. 창가 햇빛처럼 조명이 고르지 않으면 전역 임계값은 그늘 전체를 사람으로 오인하므로, 주변 평균을 기준으로 삼는 적응형 이진화가 필요합니다.</p>
+        </article>
+        <article class="rounded-xl bg-surface-container p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <span class="material-symbols-outlined text-tertiary-fixed-dim text-[28px]">join_inner</span>
+            <span class="font-mono text-label-mono-sm text-on-surface-variant">cv2.morphologyEx(OPEN/CLOSE)</span>
+          </div>
+          <h3 class="font-display text-headline-sm mb-space-xs">4. 침식 · 팽창</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-sm">침식은 흰 영역의 테두리를 깎고, 팽창은 넓힙니다. 열림(침식→팽창)은 작은 점을 지우고, 닫힘(팽창→침식)은 끊긴 영역을 잇습니다.</p>
+          <p class="text-body-sm"><strong class="text-tertiary-fixed-dim">인식 효과</strong> · 노이즈 점을 지워 과다 카운트를 막고, 목 피부색 때문에 머리와 어깨가 둘로 끊긴 한 사람을 다시 하나로 이어 중복 카운트를 막습니다.</p>
+        </article>
+        <article class="rounded-xl bg-surface-container p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <span class="material-symbols-outlined text-primary-container text-[28px]">shape_line</span>
+            <span class="font-mono text-label-mono-sm text-on-surface-variant">cv2.Canny / cv2.Sobel</span>
+          </div>
+          <h3 class="font-display text-headline-sm mb-space-xs">5. 엣지 검출</h3>
+          <p class="text-body-sm text-on-surface-variant mb-space-sm">밝기가 급하게 바뀌는 경계, 즉 윤곽선을 찾습니다.</p>
+          <p class="text-body-sm"><strong class="text-primary-container">인식 효과</strong> · 머리·어깨 윤곽은 붙어 선 사람을 나누는 단서가 됩니다. 화면 전체의 엣지 밀도가 갑자기 떨어지면 렌즈 가림·초점 이탈로 판단해 '카메라 이상' 알림을 보냅니다.</p>
+        </article>
+        <article class="rounded-xl p-space-lg border border-primary-container/30 bg-surface-container-high/60 shadow-[0_0_24px_-2px_rgba(0,240,181,0.15)]">
+          <div class="font-mono text-label-badge text-primary-container uppercase mb-space-sm">OccuFan 적용 위치 (설계안)</div>
+          <ul class="space-y-space-sm text-body-sm text-on-surface-variant">
+            <li><strong class="text-on-surface">움직임 게이트</strong> — 흑백 → 블러 → 프레임 차분 → 이진화 → 열림. 변화가 없으면 YOLO 추론을 건너뛰고 직전 인원을 유지해 CPU를 아낍니다.</li>
+            <li><strong class="text-on-surface">방 영역 마스크</strong> — PolygonZone 다각형 밖(복도·창밖)을 지워 오카운트를 막습니다.</li>
+            <li><strong class="text-on-surface">카메라 상태 감시</strong> — 엣지 밀도로 가림·흔들림을 감지해 알림을 보냅니다.</li>
+            <li><strong class="text-on-surface">파인튜닝 데이터</strong> — 천장 시점 정확도가 낮을 때 머리·어깨 라벨 후보를 만드는 데 씁니다.</li>
+          </ul>
+        </article>
       </div>
-    </section>
-  </main>
-
-  <!-- ===== 하단: 만든 사람 정보 ===== -->
-  <footer>
-    <div class="wrap">
-      <span>만든 사람: [이름]</span>
-      <span>나만의 피지컬 AI 제품 기획 과제</span>
     </div>
-  </footer>
+  </section>
 
+  <!-- ===== 5. 팬 제어 로직 시뮬레이터 ===== -->
+  <section class="py-16 lg:py-20" id="control">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-secondary-container font-mono text-label-badge uppercase mb-space-sm">Control Logic Simulator</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">기준표 + 히스테리시스로 흔들림 없는 팬 제어</h2>
+        <p class="text-on-surface-variant mt-space-sm">인원을 바꿔 보세요. 단계를 내릴 때는 기준보다 2명 더 줄어야 하고, 한 단계는 최소 60초 유지합니다. 데모에서는 60초를 6초로 줄여 보여 줍니다.</p>
+      </div>
+
+      <div class="rounded-xl bg-surface-container-low p-space-md md:p-space-lg border border-white/5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop">
+          <!-- 입력 -->
+          <div class="lg:col-span-4 rounded-lg bg-surface-container p-space-md">
+            <div class="flex items-baseline justify-between mb-space-sm">
+              <span class="text-body-sm text-on-surface-variant">카메라가 센 인원</span>
+              <span class="font-display text-headline-md font-bold"><span id="sim-raw">18</span><span class="text-body-sm text-on-surface-variant ml-0.5">명</span></span>
+            </div>
+            <input type="range" id="sim-slider" min="0" max="40" value="18" aria-label="실내 인원">
+            <div class="grid grid-cols-4 gap-1 mt-space-md">
+              <button type="button" class="sim-preset rounded bg-surface-container-high hover:bg-surface-container-highest py-1.5 text-body-sm" data-n="0">공실</button>
+              <button type="button" class="sim-preset rounded bg-surface-container-high hover:bg-surface-container-highest py-1.5 text-body-sm" data-n="8">소규모</button>
+              <button type="button" class="sim-preset rounded bg-surface-container-high hover:bg-surface-container-highest py-1.5 text-body-sm" data-n="18">중간</button>
+              <button type="button" class="sim-preset rounded bg-surface-container-high hover:bg-surface-container-highest py-1.5 text-body-sm" data-n="32">만석</button>
+            </div>
+            <div class="mt-space-md p-space-sm rounded bg-surface-container-lowest flex justify-between font-mono text-label-mono-sm">
+              <span class="text-on-surface-variant">평활 인원 (2초 중앙값)</span><span id="sim-smooth">18명</span>
+            </div>
+            <div class="mt-space-sm p-space-sm rounded bg-surface-container-lowest font-mono text-label-mono-sm text-on-surface-variant" id="sim-status" aria-live="polite">안정</div>
+          </div>
+          <!-- 팬 -->
+          <div class="lg:col-span-3 rounded-lg bg-surface-container p-space-md flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-[96px] text-primary-container fan-spin" id="sim-fan" aria-hidden="true">mode_fan</span>
+            <div class="font-display text-headline-md mt-space-sm" id="sim-stage">2단계</div>
+            <div class="font-mono text-label-mono-sm text-on-surface-variant">ESP32-S3 → 인버터</div>
+          </div>
+          <!-- 출력 -->
+          <div class="lg:col-span-5 grid grid-cols-2 gap-space-sm content-start">
+            <div class="rounded-lg bg-surface-container p-space-md">
+              <div class="text-body-sm text-on-surface-variant mb-1">풍량 지령</div>
+              <div class="font-display text-headline-md text-secondary font-bold"><span id="sim-pct">75</span><span class="font-mono text-label-mono-sm ml-1">%</span></div>
+              <div class="w-full h-1.5 rounded-full bg-surface-container-lowest mt-space-sm overflow-hidden"><div class="h-full bg-gradient-to-r from-primary-container to-secondary-container transition-all duration-500" id="sim-bar" style="width:75%"></div></div>
+            </div>
+            <div class="rounded-lg bg-surface-container p-space-md">
+              <div class="text-body-sm text-on-surface-variant mb-1">속도 지령 전압</div>
+              <div class="font-display text-headline-md font-bold"><span id="sim-volt">7.5</span><span class="font-mono text-label-mono-sm ml-1">V</span></div>
+              <div class="font-mono text-label-mono-sm text-on-surface-variant mt-space-sm">0–10 V 입력</div>
+            </div>
+            <div class="rounded-lg bg-surface-container p-space-md">
+              <div class="text-body-sm text-on-surface-variant mb-1">송풍기 전력 (7.5 kW 기준)</div>
+              <div class="font-display text-headline-md text-primary-container font-bold"><span id="sim-kw">3.16</span><span class="font-mono text-label-mono-sm ml-1">kW</span></div>
+              <div class="font-mono text-label-mono-sm text-on-surface-variant mt-space-sm">팬 법칙: 전력 ∝ 속도³</div>
+            </div>
+            <div class="rounded-lg bg-surface-container p-space-md">
+              <div class="text-body-sm text-on-surface-variant mb-1">상시 100 % 대비</div>
+              <div class="font-display text-headline-md text-primary font-bold">−<span id="sim-save">58</span><span class="font-mono text-label-mono-sm ml-1">%</span></div>
+              <div class="font-mono text-label-mono-sm text-on-surface-variant mt-space-sm">이론값 (효율 저하 미반영)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 단계 기준표 -->
+        <div class="mt-space-lg overflow-x-auto">
+          <table class="w-full text-left font-mono text-label-mono-sm md:text-body-sm min-w-[480px]">
+            <thead class="text-on-surface-variant">
+              <tr><th class="py-2 px-3 font-normal">평활 인원</th><th class="py-2 px-3 font-normal">팬 단계</th><th class="py-2 px-3 font-normal">풍량 지령</th><th class="py-2 px-3 font-normal">내릴 때 (히스테리시스)</th></tr>
+            </thead>
+            <tbody id="sim-table">
+              <tr data-stage="0"><td class="py-2 px-3">0–4명</td><td class="py-2 px-3">0단계</td><td class="py-2 px-3">30 % (최소 환기 유지)</td><td class="py-2 px-3">—</td></tr>
+              <tr data-stage="1"><td class="py-2 px-3">5–14명</td><td class="py-2 px-3">1단계</td><td class="py-2 px-3">50 %</td><td class="py-2 px-3">2명 이하가 되면 0단계</td></tr>
+              <tr data-stage="2"><td class="py-2 px-3">15–24명</td><td class="py-2 px-3">2단계</td><td class="py-2 px-3">75 %</td><td class="py-2 px-3">12명 이하가 되면 1단계</td></tr>
+              <tr data-stage="3"><td class="py-2 px-3">25명 이상</td><td class="py-2 px-3">3단계</td><td class="py-2 px-3">100 %</td><td class="py-2 px-3">22명 이하가 되면 2단계</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-space-sm text-body-sm text-on-surface-variant">근거(가정): 1인당 발열량을 현열 약 75 W, 잠열 약 55 W로 보고, 인원이 늘수록 환기·냉방 필요량이 커지는 방향으로 단계를 정했습니다. 통신 두절·카메라 오류 시에는 마지막 안전 단계를 유지하거나 100 %로 복귀합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 6. 성공 지표 ===== -->
+  <section class="bg-surface-container-lowest py-16 lg:py-20" id="metrics">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-primary-container font-mono text-label-badge uppercase mb-space-sm">Success Metrics</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">PoC에서 확인할 성공 지표</h2>
+        <p class="text-on-surface-variant mt-space-sm">모든 목표값은 기획 단계의 가정이며, PoC 실측으로 검증합니다.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter-desktop">
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-primary-container text-[28px]">groups</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≤1<span class="text-headline-sm text-primary-container ml-1">명</span></div><div class="font-display text-headline-sm mt-1">인원 카운트 MAE</div><p class="text-body-sm text-on-surface-variant mt-1">15명 이하 구간 평균 절대오차</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-primary-container text-[28px]">percent</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≤10<span class="text-headline-sm text-primary-container ml-1">%</span></div><div class="font-display text-headline-sm mt-1">인원 카운트 오차율</div><p class="text-body-sm text-on-surface-variant mt-1">15명 초과 구간</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-secondary text-[28px]">speed</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≤3<span class="text-headline-sm text-secondary ml-1">초</span></div><div class="font-display text-headline-sm mt-1">응답 속도</div><p class="text-body-sm text-on-surface-variant mt-1">인원 변화 → 팬 지령 출력 (평활화 포함)</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-secondary text-[28px]">memory</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≥5<span class="text-headline-sm text-secondary ml-1">FPS</span></div><div class="font-display text-headline-sm mt-1">엣지 추론 속도</div><p class="text-body-sm text-on-surface-variant mt-1">Raspberry Pi 5 CPU</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-primary text-[28px]">swap_vert</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≤2<span class="text-headline-sm text-primary ml-1">회</span></div><div class="font-display text-headline-sm mt-1">팬 단계 전환</div><p class="text-body-sm text-on-surface-variant mt-1">인원이 일정할 때 10분당</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-primary text-[28px]">bolt</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≥40<span class="text-headline-sm text-primary ml-1">%</span></div><div class="font-display text-headline-sm mt-1">송풍기 전력 절감률</div><p class="text-body-sm text-on-surface-variant mt-1">상시 100 % 운전 대비</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-tertiary-fixed-dim text-[28px]">co2</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≤1,000<span class="text-headline-sm text-tertiary-fixed-dim ml-1">ppm</span></div><div class="font-display text-headline-sm mt-1">사용 시간대 CO₂</div><p class="text-body-sm text-on-surface-variant mt-1">PoC 검증용 기준 센서로 확인</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-tertiary-fixed-dim text-[28px]">verified</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">≥99<span class="text-headline-sm text-tertiary-fixed-dim ml-1">%</span></div><div class="font-display text-headline-sm mt-1">시스템 가동률</div><p class="text-body-sm text-on-surface-variant mt-1">이상 시 안전 동작 포함</p></div>
+        <div class="rounded-xl bg-surface-container p-space-lg"><span class="material-symbols-outlined text-primary-container text-[28px]">visibility_off</span><div class="font-display text-display-hero-mobile font-bold mt-space-sm">0<span class="text-headline-sm text-primary-container ml-1">건</span></div><div class="font-display text-headline-sm mt-1">저장·전송 영상</div><p class="text-body-sm text-on-surface-variant mt-1">개인 식별·얼굴 인식 없음</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 7. ROI 분석 ===== -->
+  <section class="py-16 lg:py-20" id="roi">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-tertiary-fixed-dim font-mono text-label-badge uppercase mb-space-sm">ROI Analysis</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">강의실 10실 도입 시 약 5개월 만에 회수</h2>
+        <p class="text-on-surface-variant mt-space-sm">7.5 kW 송풍기, 하루 12시간 · 월 22일 상시 100 % 운전을 기준으로 계산했습니다 (가정).</p>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-gutter-desktop">
+        <div class="rounded-xl bg-surface-container p-space-md md:p-space-lg"><div class="font-mono text-label-mono-sm text-on-surface-variant">초기 투자비 CAPEX</div><div class="font-display text-headline-md md:text-headline-lg font-bold mt-1">1,100<span class="text-body-sm text-on-surface-variant ml-1">만 원</span></div></div>
+        <div class="rounded-xl bg-surface-container p-space-md md:p-space-lg"><div class="font-mono text-label-mono-sm text-on-surface-variant">월 순 절감액</div><div class="font-display text-headline-md md:text-headline-lg font-bold mt-1 text-primary-container">217.5<span class="text-body-sm text-on-surface-variant ml-1">만 원</span></div></div>
+        <div class="rounded-xl bg-surface-container p-space-md md:p-space-lg"><div class="font-mono text-label-mono-sm text-on-surface-variant">연간 ROI</div><div class="font-display text-headline-md md:text-headline-lg font-bold mt-1 text-secondary">약 237<span class="text-body-sm text-on-surface-variant ml-1">%</span></div></div>
+        <div class="rounded-xl bg-surface-container p-space-md md:p-space-lg"><div class="font-mono text-label-mono-sm text-on-surface-variant">투자 회수기간</div><div class="font-display text-headline-md md:text-headline-lg font-bold mt-1 text-tertiary-fixed-dim">약 5.1<span class="text-body-sm text-on-surface-variant ml-1">개월</span></div></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop mt-gutter-desktop">
+        <div class="lg:col-span-8 rounded-xl bg-surface-container-low p-space-md md:p-space-lg overflow-x-auto">
+          <table class="w-full text-left text-body-sm min-w-[520px]">
+            <thead class="font-mono text-label-mono-sm text-on-surface-variant"><tr><th class="py-2 pr-3 font-normal">항목</th><th class="py-2 pr-3 font-normal">산출 근거</th><th class="py-2 font-normal text-right">금액</th></tr></thead>
+            <tbody class="divide-y divide-white/5">
+              <tr><td class="py-3 pr-3 align-top">초기 투자비</td><td class="py-3 pr-3 text-on-surface-variant">H/W 35만 × 10실, 모델 개발 120시간 × 25,000원, 라이선스 150만, 설치 30만 × 10실</td><td class="py-3 text-right font-mono whitespace-nowrap">11,000,000원</td></tr>
+              <tr><td class="py-3 pr-3 align-top">월 절감액</td><td class="py-3 pr-3 text-on-surface-variant">전력 1,089 kWh × 150원 × 10실 + 외기 냉난방 부하 9만 × 10실</td><td class="py-3 text-right font-mono whitespace-nowrap">2,533,500원</td></tr>
+              <tr><td class="py-3 pr-3 align-top">월 운영비</td><td class="py-3 pr-3 text-on-surface-variant">엣지 기기 전력, 유지보수, 모델 재학습 공수 (클라우드·API 비용 없음)</td><td class="py-3 text-right font-mono whitespace-nowrap">358,640원</td></tr>
+              <tr><td class="py-3 pr-3 align-top font-semibold">월 순 절감액</td><td class="py-3 pr-3 text-on-surface-variant">2,533,500 − 358,640</td><td class="py-3 text-right font-mono whitespace-nowrap text-primary-container font-semibold">2,174,860원</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="lg:col-span-4 rounded-xl p-space-lg border border-primary-container/30 bg-surface-container-high/60">
+          <div class="font-mono text-label-badge text-primary-container uppercase mb-space-sm">최종 판정 · 투자 타당</div>
+          <p class="text-body-sm text-on-surface-variant">팬 법칙으로 계산한 이론 전력은 상시 100 %의 약 35 %입니다. 인버터·모터 효율 저하와 최소 환기량을 반영해 실제 절감률은 <strong class="text-on-surface">55 %로 보수적으로 가정</strong>했습니다.</p>
+          <p class="text-body-sm text-on-surface-variant mt-space-sm">결과는 송풍기 용량, 운전 시간, 실제 절감률에 크게 좌우되므로 PoC에서 실측 전력으로 절감률을 검증한 뒤 수치를 확정합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 8. 개발 범위 ===== -->
+  <section class="bg-surface-container-lowest py-16 lg:py-20" id="scope">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-primary font-mono text-label-badge uppercase mb-space-sm">Scope</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">만드는 것과 만들지 않는 것</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter-desktop">
+        <div class="rounded-xl bg-surface-container p-space-lg">
+          <div class="font-mono text-label-badge text-primary-container uppercase mb-space-md">개발 범위 (In Scope)</div>
+          <ul class="space-y-space-sm text-body-sm">
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>카메라 영상 기반 실시간 사람 검출 (YOLO nano)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>중복 제거 · 추적 · 방 영역 카운트 (supervision)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>인원 평활화와 팬 단계 결정 (히스테리시스 · 최소 유지시간)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>ESP32-S3를 통한 팬 속도 지령 출력 (0–10 V)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>인원 · 팬 단계 · 절감 추정 로그 로컬 저장 (SQLite)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>관리자 웹 대시보드 (현재 인원, 팬 단계, 일별 추이)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>이상 알림 (카메라 끊김, 인원 급변, 통신 오류)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>통신 두절 · 카메라 오류 시 안전 동작</li>
+          </ul>
+        </div>
+        <div class="rounded-xl bg-surface-container-low p-space-lg">
+          <div class="font-mono text-label-badge text-on-surface-variant uppercase mb-space-md">개발 제외 범위 (Out of Scope)</div>
+          <ul class="space-y-space-sm text-body-sm text-on-surface-variant">
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>개인 식별 · 얼굴 인식 (인원 '수'만 셉니다)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>영상 저장 및 외부(클라우드) 전송</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>모바일 앱 개발</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>다국어 지원</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>클라우드 모델 학습 · 자동 재학습 파이프라인</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>사용자 권한 관리 (다중 계정)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>냉난방 설정온도 등 팬 외 공조 장비 제어</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-outline text-[18px] mt-0.5">remove_circle</span>다중 방 · 건물 통합 관리</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== 하단: 만든 사람 정보 ===== -->
+<footer class="border-t border-white/5">
+  <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop py-space-xl flex flex-col md:flex-row justify-between gap-space-md">
+    <div class="flex items-center gap-space-sm">
+      <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[18px]">mode_fan</span></div>
+      <div>
+        <div class="font-display text-headline-sm">OccuFan</div>
+        <div class="text-body-sm text-on-surface-variant">인원 연동 팬 제어 시스템 (가칭)</div>
+      </div>
+    </div>
+    <div class="text-body-sm text-on-surface-variant md:text-right">
+      <div>만든 사람: 기태</div>
+      <div>나만의 피지컬 AI 제품 기획 과제 · 디자인: Google Stitch</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---- 합성 천장 시점 장면 + 영상 전처리 (DOM 없이 동작) ----
+const VW = 320, VH = 200;
+
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gaussRand(r) {
+  let u = 0; while (!u) u = r();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r());
+}
+
+// 천장 카메라로 내려다본 강의실: 바닥 타일, 책상, 사람(머리 + 어깨), 조명 불균일, 센서 노이즈
+function makeScene(seed, noise, light) {
+  const r = rng(seed);
+  const rgb = new Float32Array(VW * VH * 3);
+  const set = (x, y, c) => {
+    if (x < 0 || y < 0 || x >= VW || y >= VH) return;
+    const i = (y * VW + x) * 3; rgb[i] = c[0]; rgb[i + 1] = c[1]; rgb[i + 2] = c[2];
+  };
+  for (let y = 0; y < VH; y++) for (let x = 0; x < VW; x++) {
+    const grout = (x % 40 === 0 || y % 40 === 0) ? -6 : 0;
+    set(x, y, [176 + grout, 170 + grout, 158 + grout]);
+  }
+  const desks = [[24, 26, 120, 34], [176, 26, 120, 34], [24, 138, 120, 34], [176, 138, 120, 34]];
+  for (const [dx, dy, dw, dh] of desks) for (let y = dy; y < dy + dh; y++) for (let x = dx; x < dx + dw; x++) {
+    set(x, y, [196, 191, 180]);
+  }
+  const shirts = [[45, 52, 70], [35, 35, 38], [85, 90, 60], [150, 45, 45], [120, 120, 125], [225, 225, 220], [200, 185, 160], [60, 90, 140]];
+  const people = [];
+  const n = 7 + Math.floor(r() * 8);
+  let guard = 0;
+  while (people.length < n && guard++ < 2000) {
+    const px = 18 + r() * (VW - 36), py = 18 + r() * (VH - 36);
+    if (people.every(p => (p.x - px) ** 2 + (p.y - py) ** 2 > 34 * 34)) people.push({ x: px, y: py });
+  }
+  for (const p of people) {
+    const a = r() * Math.PI, ca = Math.cos(a), sa = Math.sin(a);
+    const shirt = shirts[Math.floor(r() * shirts.length)];
+    const hair = r() < 0.5 ? [38, 30, 26] : [72, 52, 36];
+    const ring = r() < 0.4; // 목·피부가 보여 머리와 어깨가 끊겨 보이는 사람
+    for (let y = -16; y <= 16; y++) for (let x = -16; x <= 16; x++) {
+      const u = x * ca + y * sa, v = -x * sa + y * ca;
+      const d = Math.hypot(x, y);
+      let c = null;
+      if ((u / 13) ** 2 + (v / 8) ** 2 <= 1) c = shirt;
+      if (ring && d <= 9) c = [224, 180, 150];
+      if (d <= 6.5) c = hair;
+      if (c) set(Math.round(p.x + x), Math.round(p.y + y), c);
+    }
+  }
+  for (let y = 0; y < VH; y++) for (let x = 0; x < VW; x++) {
+    const L = 1 - light * 0.6 * Math.pow(1 - x / VW, 1.5)
+      + light * 0.25 * Math.exp(-((x - 0.8 * VW) ** 2 + (y - 0.3 * VH) ** 2) / (2 * 40 * 40));
+    const g = gaussRand(r) * noise * 22;
+    const sp = r();
+    const i = (y * VW + x) * 3;
+    for (let k = 0; k < 3; k++) {
+      let v = rgb[i + k] * L + g + gaussRand(r) * noise * 6;
+      if (sp < noise * 0.015) v = 15; else if (sp > 1 - noise * 0.01) v = 245;
+      rgb[i + k] = Math.max(0, Math.min(255, v));
+    }
+  }
+  return { rgb, truth: people.length };
+}
+
+function toGray(rgb) {
+  const g = new Float32Array(VW * VH);
+  for (let i = 0; i < g.length; i++) g[i] = 0.299 * rgb[i * 3] + 0.587 * rgb[i * 3 + 1] + 0.114 * rgb[i * 3 + 2];
+  return g;
+}
+
+// 5×5 가우시안 블러 (가로·세로 분리 커널 1-4-6-4-1)
+function blur(g) {
+  const k = [1, 4, 6, 4, 1], tmp = new Float32Array(g.length), out = new Float32Array(g.length);
+  const cx = v => Math.max(0, Math.min(VW - 1, v)), cy = v => Math.max(0, Math.min(VH - 1, v));
+  for (let y = 0; y < VH; y++) for (let x = 0; x < VW; x++) {
+    let s = 0; for (let j = -2; j <= 2; j++) s += k[j + 2] * g[y * VW + cx(x + j)]; tmp[y * VW + x] = s / 16;
+  }
+  for (let y = 0; y < VH; y++) for (let x = 0; x < VW; x++) {
+    let s = 0; for (let j = -2; j <= 2; j++) s += k[j + 2] * tmp[cy(y + j) * VW + x]; out[y * VW + x] = s / 16;
+  }
+  return out;
+}
+
+function otsu(g) {
+  const hist = new Array(256).fill(0);
+  for (const v of g) hist[Math.round(v)]++;
+  const total = g.length; let sum = 0; for (let i = 0; i < 256; i++) sum += i * hist[i];
+  let sumB = 0, wB = 0, best = 0, t = 128;
+  for (let i = 0; i < 256; i++) {
+    wB += hist[i]; if (!wB) continue; const wF = total - wB; if (!wF) break;
+    sumB += i * hist[i];
+    const between = wB * wF * (sumB / wB - (sum - sumB) / wF) ** 2;
+    if (between > best) { best = between; t = i; }
+  }
+  return t;
+}
+
+// 이진화: 사람(어두운 영역) = 1. global = 오츠 전역 임계값, adaptive = 주변 31×31 평균보다 C만큼 어두우면 1
+function threshold(g, mode) {
+  const b = new Uint8Array(g.length);
+  if (mode === 'global') {
+    const t = otsu(g); for (let i = 0; i < g.length; i++) b[i] = g[i] < t ? 1 : 0;
+    return b;
+  }
+  const S = new Float64Array((VW + 1) * (VH + 1));
+  for (let y = 0; y < VH; y++) { let row = 0; for (let x = 0; x < VW; x++) { row += g[y * VW + x]; S[(y + 1) * (VW + 1) + x + 1] = S[y * (VW + 1) + x + 1] + row; } }
+  const R = 15, C = 28;
+  for (let y = 0; y < VH; y++) for (let x = 0; x < VW; x++) {
+    const x0 = Math.max(0, x - R), x1 = Math.min(VW, x + R + 1), y0 = Math.max(0, y - R), y1 = Math.min(VH, y + R + 1);
+    const s = S[y1 * (VW + 1) + x1] - S[y0 * (VW + 1) + x1] - S[y1 * (VW + 1) + x0] + S[y0 * (VW + 1) + x0];
+    b[y * VW + x] = g[y * VW + x] < s / ((x1 - x0) * (y1 - y0)) - C ? 1 : 0;
+  }
+  return b;
+}
+
+// 3×3 침식(erode) / 팽창(dilate)
+function morph(b, erode) {
+  const out = new Uint8Array(b.length);
+  for (let y = 0; y < VH; y++) for (let x = 0; x < VW; x++) {
+    let v = erode ? 1 : 0;
+    for (let j = -1; j <= 1 && v === (erode ? 1 : 0); j++) for (let i = -1; i <= 1; i++) {
+      const xx = x + i, yy = y + j;
+      const p = (xx < 0 || yy < 0 || xx >= VW || yy >= VH) ? 0 : b[yy * VW + xx];
+      if (erode && !p) { v = 0; break; }
+      if (!erode && p) { v = 1; break; }
+    }
+    out[y * VW + x] = v;
+  }
+  return out;
+}
+const repeat = (b, erode, n) => { for (let i = 0; i < n; i++) b = morph(b, erode); return b; };
+// 열림(침식→팽창): 작은 점 노이즈 제거 / 닫힘(팽창→침식): 끊긴 한 사람을 다시 이어 붙임
+const opening = (b, n) => repeat(repeat(b, true, n), false, n);
+const closing = (b, n) => repeat(repeat(b, false, n), true, n);
+
+function sobel(g) {
+  const m = new Float32Array(g.length);
+  for (let y = 1; y < VH - 1; y++) for (let x = 1; x < VW - 1; x++) {
+    const p = (i, j) => g[(y + j) * VW + x + i];
+    const gx = -p(-1, -1) - 2 * p(-1, 0) - p(-1, 1) + p(1, -1) + 2 * p(1, 0) + p(1, 1);
+    const gy = -p(-1, -1) - 2 * p(0, -1) - p(1, -1) + p(-1, 1) + 2 * p(0, 1) + p(1, 1);
+    m[y * VW + x] = Math.hypot(gx, gy);
+  }
+  return m;
+}
+
+// 8방향 연결 덩어리 찾기 → 면적 minArea 이상만 사람 후보로 셈
+function blobs(b, minArea) {
+  const seen = new Uint8Array(b.length), out = [], stack = [];
+  for (let s = 0; s < b.length; s++) {
+    if (!b[s] || seen[s]) continue;
+    let area = 0, x0 = VW, y0 = VH, x1 = 0, y1 = 0;
+    stack.push(s); seen[s] = 1;
+    while (stack.length) {
+      const q = stack.pop(), x = q % VW, y = (q / VW) | 0; area++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
+        const xx = x + i, yy = y + j; if (xx < 0 || yy < 0 || xx >= VW || yy >= VH) continue;
+        const k = yy * VW + xx; if (b[k] && !seen[k]) { seen[k] = 1; stack.push(k); }
+      }
+    }
+    if (area >= minArea) out.push({ x0, y0, x1, y1, area });
+  }
+  return out;
+}
+
+const MIN_AREA = 20;
+function runPipeline(scene, mode) {
+  const gray = toGray(scene.rgb);
+  const blurred = blur(gray);
+  const binRaw = threshold(gray, mode);
+  const bin = threshold(blurred, mode);
+  const cleaned = closing(opening(bin, 1), 2);
+  const edge = sobel(blurred);
+  let strong = 0; for (const v of edge) if (v > 120) strong++;
+  const found = blobs(cleaned, MIN_AREA);
+  return {
+    gray, blurred, bin, cleaned, edge, found,
+    edgeDensity: strong / edge.length,
+    counts: {
+      noBlur: blobs(binRaw, MIN_AREA).length,
+      blurOnly: blobs(bin, MIN_AREA).length,
+      openOnly: blobs(opening(bin, 1), MIN_AREA).length,
+      full: found.length,
+    },
+  };
+}
+
+// ===== 전처리 데모 화면 =====
+(function visionDemo() {
+  const canvas = document.getElementById('vd-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const STEPS = [
+    { key: 'orig', tab: '원본', tag: 'STEP 0 · 입력', title: '원본 (천장 카메라)', code: 'frame = camera.read()',
+      desc: '합성한 강의실 천장 시점 이미지입니다. 노이즈 점, 바닥 타일, 책상, 창가 쪽 밝기 차이가 섞여 있습니다. 동그란 머리와 타원형 어깨가 사람입니다.' },
+    { key: 'gray', tab: '흑백', tag: 'STEP 1 · 흑백 변환', title: '흑백 변환', code: 'gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)',
+      desc: '밝기만 남겨 데이터를 1/3로 줄였습니다. 옷 색이 달라도 "배경보다 어두운가"라는 하나의 기준으로 비교할 수 있게 됩니다.' },
+    { key: 'blur', tab: '블러', tag: 'STEP 2 · 블러', title: '가우시안 블러 5×5', code: 'blur = cv2.GaussianBlur(gray, (5, 5), 0)',
+      desc: '점 노이즈가 주변 픽셀과 섞여 희미해졌습니다. 오른쪽 막대에서 블러 전후로 이진화 덩어리 수가 줄어드는 것을 확인하세요.' },
+    { key: 'bin', tab: '이진화', tag: 'STEP 3 · 이진화', title: '이진화', code: 'mask = cv2.adaptiveThreshold(blur, 255, MEAN_C, BINARY_INV, 31, 28)',
+      desc: '배경보다 충분히 어두운 픽셀을 흰색(사람 후보)으로 만들었습니다. 조명 불균일을 올린 뒤 "전역(오츠)"으로 바꾸면 그늘진 왼쪽이 통째로 사람으로 잡히는 것을 볼 수 있습니다.' },
+    { key: 'morph', tab: '침식·팽창', tag: 'STEP 4 · 침식·팽창', title: '열림 + 닫힘', code: 'mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k3)\nmask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k3, iterations=2)',
+      desc: '열림(침식→팽창)으로 남은 작은 점을 지우고, 닫힘(팽창→침식)으로 목 부분 때문에 끊긴 머리·어깨를 한 덩어리로 이었습니다. 이제 덩어리 하나가 사람 한 명에 대응합니다.' },
+    { key: 'edge', tab: '엣지', tag: 'STEP 5 · 엣지', title: '엣지 (소벨 크기)', code: 'gx = cv2.Sobel(blur, cv2.CV_32F, 1, 0)\ngy = cv2.Sobel(blur, cv2.CV_32F, 0, 1)\nedges = cv2.magnitude(gx, gy)',
+      desc: '머리·어깨·책상 윤곽이 드러납니다. 화면 전체 엣지 밀도가 평소보다 급격히 떨어지면 렌즈 가림이나 초점 이탈로 보고 알림을 보냅니다.' },
+    { key: 'result', tab: '결과', tag: '결과', title: '인원 카운트 결과', code: 'count = len(blobs)  # 실제 제품: YOLO + ByteTrack',
+      desc: '최종 마스크의 덩어리마다 상자를 그렸습니다. 노이즈와 조명을 바꿔 가며 어떤 조건에서 카운트가 흔들리는지 살펴보세요.' },
+  ];
+  let seed = 1, mode = 'adaptive', step = 4, scene = null, res = null;
+
+  const tabs = document.getElementById('vd-tabs');
+  STEPS.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tab rounded-lg px-3 py-1.5 text-body-sm bg-surface-container hover:bg-surface-container-high';
+    b.setAttribute('role', 'tab'); b.textContent = s.tab;
+    b.addEventListener('click', () => { step = i; draw(); });
+    tabs.appendChild(b);
+  });
+
+  function putGray(arr, scale) {
+    const img = ctx.createImageData(VW, VH);
+    for (let i = 0; i < VW * VH; i++) {
+      const v = Math.min(255, arr[i] * scale);
+      img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  function putRGB(rgb) {
+    const img = ctx.createImageData(VW, VH);
+    for (let i = 0; i < VW * VH; i++) {
+      img.data[i * 4] = rgb[i * 3]; img.data[i * 4 + 1] = rgb[i * 3 + 1]; img.data[i * 4 + 2] = rgb[i * 3 + 2]; img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function compute() {
+    const noise = document.getElementById('vd-noise').value / 100;
+    const light = document.getElementById('vd-light').value / 100;
+    document.getElementById('vd-noise-v').textContent = Math.round(noise * 100) + '%';
+    document.getElementById('vd-light-v').textContent = Math.round(light * 100) + '%';
+    scene = makeScene(seed, noise, light);
+    res = runPipeline(scene, mode);
+    drawBars();
+    draw();
+  }
+
+  function drawBars() {
+    const rows = [
+      ['흑백 → 이진화', res.counts.noBlur, '#ffb4ab'],
+      ['+ 블러', res.counts.blurOnly, '#ffb955'],
+      ['+ 열림 (침식→팽창)', res.counts.openOnly, '#a5e7ff'],
+      ['+ 닫힘 (최종)', res.counts.full, '#00f0b5'],
+    ];
+    const max = Math.max(scene.truth, ...rows.map(r => r[1])) * 1.1;
+    document.getElementById('vd-truth').textContent = scene.truth;
+    const truthPos = (scene.truth / max) * 100;
+    document.getElementById('vd-bars').innerHTML = rows.map(([label, n, color]) => {
+      const diff = n - scene.truth;
+      const diffText = diff === 0 ? '정확' : (diff > 0 ? '+' + diff : diff) + '명';
+      return `<div>
+        <div class="flex justify-between font-mono text-label-mono-sm mb-1"><span class="text-on-surface-variant">${label}</span><span><strong>${n}</strong>명 <span class="${diff === 0 ? 'text-primary-container' : 'text-on-surface-variant'}">(${diffText})</span></span></div>
+        <div class="relative h-2.5 rounded-full bg-surface-container-lowest">
+          <div class="h-full rounded-full transition-all duration-300" style="width:${(n / max) * 100}%;background:${color}"></div>
+          <div class="absolute -top-1 -bottom-1 border-l-2 border-dashed border-on-surface" style="left:${truthPos}%"></div>
+        </div></div>`;
+    }).join('');
+  }
+
+  function draw() {
+    const s = STEPS[step];
+    [...tabs.children].forEach((b, i) => b.setAttribute('aria-selected', i === step ? 'true' : 'false'));
+    document.getElementById('vd-step-tag').textContent = s.tag;
+    document.getElementById('vd-step-title').textContent = s.title;
+    let desc = s.desc;
+    if (s.key === 'edge') desc += ` 현재 엣지 밀도: ${(res.edgeDensity * 100).toFixed(1)}%.`;
+    if (s.key === 'result') desc = `실제 ${scene.truth}명 중 ${res.found.length}명을 셌습니다. ` + desc;
+    document.getElementById('vd-step-desc').textContent = desc;
+    document.getElementById('vd-step-code').textContent = s.code;
+    if (s.key === 'orig' || s.key === 'result') putRGB(scene.rgb);
+    if (s.key === 'gray') putGray(res.gray, 1);
+    if (s.key === 'blur') putGray(res.blurred, 1);
+    if (s.key === 'bin') putGray(res.bin, 255);
+    if (s.key === 'morph') putGray(res.cleaned, 255);
+    if (s.key === 'edge') putGray(res.edge, 0.6);
+    if (s.key === 'result') {
+      ctx.lineWidth = 1.5; ctx.strokeStyle = '#00f0b5';
+      ctx.font = '10px JetBrains Mono, monospace'; ctx.fillStyle = '#00f0b5';
+      res.found.forEach((b, i) => {
+        ctx.strokeRect(b.x0 - 2.5, b.y0 - 2.5, b.x1 - b.x0 + 5, b.y1 - b.y0 + 5);
+        ctx.fillText(String(i + 1), b.x0 - 2, b.y0 - 5);
+      });
+    }
+  }
+
+  let pending = 0;
+  const schedule = () => { cancelAnimationFrame(pending); pending = requestAnimationFrame(compute); };
+  document.getElementById('vd-noise').addEventListener('input', schedule);
+  document.getElementById('vd-light').addEventListener('input', schedule);
+  document.getElementById('vd-new').addEventListener('click', () => { seed = Math.floor(Math.random() * 1e9); compute(); });
+  document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+    compute();
+  }));
+  compute();
+})();
+
+// ===== 팬 단계 결정 로직 (PRD 기준표 + 히스테리시스 + 최소 유지시간) =====
+const STAGE_MIN = [0, 5, 15, 25];      // 단계별 최소 인원
+const STAGE_PCT = [30, 50, 75, 100];   // 단계별 풍량 지령 %
+const HYST = 2;                          // 내릴 때는 기준보다 2명 더 줄어야 함
+const tableStage = n => STAGE_MIN.reduce((s, min, i) => (n >= min ? i : s), 0);
+function desiredStage(n, current) {
+  const up = tableStage(n);
+  if (up >= current) return up;
+  let k = current;
+  while (k > 0 && n < STAGE_MIN[k] - HYST) k--;
+  return k;
+}
+const fanKw = pct => 7.5 * Math.pow(pct / 100, 3);
+
+(function heroCard() {
+  const el = document.getElementById('hero-count');
+  if (!el) return;
+  let n = 18;
+  const render = () => {
+    const st = tableStage(n), pct = STAGE_PCT[st];
+    el.textContent = n;
+    document.getElementById('hero-stage').textContent = st + '단계';
+    document.getElementById('hero-pct').textContent = pct;
+    document.getElementById('hero-volt').textContent = (pct / 10).toFixed(1);
+    document.getElementById('hero-kw').textContent = fanKw(pct).toFixed(2);
+    [...document.getElementById('hero-steps').children].forEach((d, i) => {
+      d.className = 'h-2 rounded-full ' + (i <= st ? 'bg-primary-container' : 'bg-surface-container-high');
+    });
+  };
+  render();
+  setInterval(() => { n = Math.max(2, Math.min(30, n + Math.round((Math.random() - 0.5) * 6))); render(); }, 3000);
+})();
+
+(function controlSim() {
+  const slider = document.getElementById('sim-slider');
+  if (!slider) return;
+  const HOLD_MS = 6000;         // 실제 60초 → 데모 6초
+  const TICK_MS = 250;
+  const samples = [];           // 최근 2초 (8틱) 인원
+  let stage = 2, holdUntil = 0;
+
+  document.querySelectorAll('.sim-preset').forEach(b => b.addEventListener('click', () => { slider.value = b.dataset.n; }));
+
+  function tick() {
+    const raw = +slider.value;
+    samples.push(raw); if (samples.length > 8) samples.shift();
+    const sorted = [...samples].sort((a, b) => a - b);
+    const smooth = sorted[Math.floor(sorted.length / 2)];
+    const want = desiredStage(smooth, stage);
+    const now = Date.now();
+    let status = '안정 — 현재 단계 유지';
+    if (want !== stage) {
+      if (now >= holdUntil) { stage = want; holdUntil = now + HOLD_MS; status = '단계 변경 → MQTT로 지령 전송'; }
+      else status = `최소 유지시간 대기 중 (${Math.ceil((holdUntil - now) / 1000)}초 뒤 ${want}단계로)`;
+    } else if (tableStage(smooth) < stage) {
+      status = `히스테리시스: ${STAGE_MIN[stage] - HYST - 1}명 이하가 되어야 단계를 내립니다`;
+    } else if (now < holdUntil) {
+      status = `단계 유지 중 (최소 유지 ${Math.ceil((holdUntil - now) / 1000)}초 남음)`;
+    }
+    const pct = STAGE_PCT[stage];
+    document.getElementById('sim-raw').textContent = raw;
+    document.getElementById('sim-smooth').textContent = smooth + '명';
+    document.getElementById('sim-status').textContent = status;
+    document.getElementById('sim-stage').textContent = stage + '단계';
+    document.getElementById('sim-pct').textContent = pct;
+    document.getElementById('sim-bar').style.width = pct + '%';
+    document.getElementById('sim-volt').textContent = (pct / 10).toFixed(1);
+    document.getElementById('sim-kw').textContent = fanKw(pct).toFixed(2);
+    document.getElementById('sim-save').textContent = Math.round((1 - Math.pow(pct / 100, 3)) * 100);
+    document.getElementById('sim-fan').style.animationDuration = (1.6 * 100 / pct / 2).toFixed(2) + 's';
+    document.querySelectorAll('#sim-table tr').forEach(tr => {
+      const on = +tr.dataset.stage === stage;
+      tr.className = on ? 'bg-primary-container/15 text-primary-container' : 'text-on-surface-variant';
+    });
+  }
+  tick();
+  setInterval(tick, TICK_MS);
+})();
+</script>
 </body>
 </html>
