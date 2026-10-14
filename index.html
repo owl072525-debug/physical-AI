@@ -179,7 +179,7 @@
                 <div class="h-2 rounded-full bg-surface-container-high"></div>
               </div>
               <div class="flex justify-between font-mono text-label-mono-sm text-on-surface-variant mt-1.5">
-                <span>0–4명</span><span>5–14</span><span>15–24</span><span>25+</span>
+                <span>0–5명</span><span>6–11</span><span>12–29</span><span>30+</span>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-space-sm">
@@ -198,7 +198,7 @@
                 <span class="font-mono text-label-mono-sm text-on-surface-variant">상시 100 % = 7.5 kW</span>
               </div>
             </div>
-            <p class="mt-space-md font-mono text-label-mono-sm text-on-surface-variant">카메라 → Pi 5 (YOLO nano · supervision) → MQTT → ESP32-S3 → 0–10 V → VFD</p>
+            <p class="mt-space-md font-mono text-label-mono-sm text-on-surface-variant">카메라 → Pi 5 (YOLO26 nano · supervision) → MQTT → ESP32-S3 → 0–10 V → VFD</p>
           </div>
         </div>
       </div>
@@ -282,7 +282,7 @@
           <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary font-mono font-bold mb-space-md">02</div>
           <div class="font-mono text-label-mono-sm text-secondary uppercase mb-1">판단 · Decide</div>
           <h3 class="font-display text-headline-sm mb-space-xs">사람 검출 → 추적 → 영역 카운트</h3>
-          <p class="text-body-sm text-on-surface-variant mb-space-md">YOLO nano가 사람을 찾고, supervision이 중복 박스 제거(NMS)·같은 사람 추적(ByteTrack)·방 영역 카운트(PolygonZone)를 처리합니다. 최근 2초 인원의 중앙값으로 흔들림을 줄입니다.</p>
+          <p class="text-body-sm text-on-surface-variant mb-space-md">YOLO26 nano가 사람을 찾고, supervision이 ByteTrack(추적)·PolygonZone(방 영역 카운트)을 처리합니다. 최근 2초 인원의 중앙값으로 흔들림을 줄입니다.</p>
           <div class="p-space-xs rounded bg-surface-container font-mono text-label-mono-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-secondary">memory</span>ONNX Runtime · Pi 5 CPU</div>
         </div>
         <div class="rounded-xl bg-surface-container-low p-space-lg">
@@ -300,7 +300,7 @@
         <ol class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-md">
           <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 1 · 설치</div><p class="text-body-sm text-on-surface-variant">관리자가 카메라와 Pi 5를 설치하고, ESP32-S3를 인버터 0–10 V 입력에 연결합니다. 대시보드에서 방 영역(다각형)과 단계 기준 인원을 설정합니다.</p></li>
           <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 2 · 데이터 수집</div><p class="text-body-sm text-on-surface-variant">카메라가 영상을 연속 촬영하고, 엣지 기기가 프레임을 메모리에서만 처리한 뒤 즉시 폐기합니다.</p></li>
-          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 3 · 분석</div><p class="text-body-sm text-on-surface-variant">AI 모델이 사람을 검출하고, 중복 박스 제거와 추적을 거쳐 방 영역 안의 인원 수를 계산합니다.</p></li>
+          <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-primary-container mb-1">STEP 3 · 분석</div><p class="text-body-sm text-on-surface-variant">AI 모델이 사람을 검출하고, 추적을 거쳐 방 영역 안의 인원 수를 계산합니다.</p></li>
           <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-secondary mb-1">STEP 4 · 판단</div><p class="text-body-sm text-on-surface-variant">최근 2초 인원을 중앙값으로 평활화하고, 기준표·히스테리시스·최소 유지시간 규칙으로 팬 단계를 정합니다.</p></li>
           <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-secondary mb-1">STEP 5 · 제어</div><p class="text-body-sm text-on-surface-variant">결정된 단계를 MQTT로 ESP32-S3에 보내고, ESP32-S3가 인버터에 속도 지령을 출력합니다.</p></li>
           <li class="rounded-xl glass p-space-md"><div class="font-mono text-label-badge text-secondary mb-1">STEP 6 · 확인·후속</div><p class="text-body-sm text-on-surface-variant">대시보드에서 현재 인원, 팬 단계, 일별 전력 절감 추정치를 봅니다. 카메라 오류·인원 급변 시 알림을 받습니다.</p></li>
@@ -316,8 +316,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-sm font-mono text-label-mono-sm">
           <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">카메라</span><span class="text-right">Pi Camera Module 3 / USB</span></div>
           <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">Edge AI</span><span class="text-right">Raspberry Pi 5 · ONNX Runtime</span></div>
-          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">AI 모델</span><span class="text-right">YOLO nano (COCO person)</span></div>
-          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">후처리</span><span class="text-right">supervision · NMS · ByteTrack · PolygonZone</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">AI 모델</span><span class="text-right">YOLO26 nano (COCO person)</span></div>
+          <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">후처리</span><span class="text-right">supervision · ByteTrack · PolygonZone</span></div>
           <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">MCU</span><span class="text-right">ESP32-S3 (Wi-Fi, 0–10 V 출력)</span></div>
           <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">구동기</span><span class="text-right">인버터(VFD) 0–10 V 속도 입력</span></div>
           <div class="flex justify-between gap-3 py-2 px-3 bg-surface-container/50 rounded"><span class="text-on-surface-variant">서버</span><span class="text-right">FastAPI (Pi 5 내부)</span></div>
@@ -573,7 +573,7 @@
           </div>
           <h3 class="font-display text-headline-sm mb-space-xs">인원 수 오차 · 풍량 단계 일치율</h3>
           <p class="text-body-sm text-on-surface-variant mb-space-sm">15명 이하 평균 오차 ≤ 1명 (가정) · 15명 초과 오차율 ≤ 10 % (가정) · 풍량 단계 일치율 ≥ 95 % (가정)</p>
-          <p class="text-body-sm"><strong class="text-primary">이유</strong> · mAP만으로는 "팬이 제대로 도는가"를 말할 수 없습니다. 1명 차이로 단계가 바뀌는 경계(4↔5, 14↔15, 24↔25명) 사진은 따로 봅니다.</p>
+          <p class="text-body-sm"><strong class="text-primary">이유</strong> · mAP만으로는 "팬이 제대로 도는가"를 말할 수 없습니다. 1명 차이로 단계가 바뀌는 경계(5↔6, 11↔12, 29↔30명) 사진은 따로 봅니다.</p>
         </article>
         <article class="rounded-xl bg-surface-container p-space-lg">
           <div class="flex items-center justify-between mb-space-md">
@@ -662,14 +662,14 @@
               <tr><th class="py-2 px-3 font-normal">평활 인원</th><th class="py-2 px-3 font-normal">팬 단계</th><th class="py-2 px-3 font-normal">풍량 지령</th><th class="py-2 px-3 font-normal">내릴 때 (히스테리시스)</th></tr>
             </thead>
             <tbody id="sim-table">
-              <tr data-stage="0"><td class="py-2 px-3">0–4명</td><td class="py-2 px-3">0단계</td><td class="py-2 px-3">30 % (최소 환기 유지)</td><td class="py-2 px-3">—</td></tr>
-              <tr data-stage="1"><td class="py-2 px-3">5–14명</td><td class="py-2 px-3">1단계</td><td class="py-2 px-3">50 %</td><td class="py-2 px-3">2명 이하가 되면 0단계</td></tr>
-              <tr data-stage="2"><td class="py-2 px-3">15–24명</td><td class="py-2 px-3">2단계</td><td class="py-2 px-3">75 %</td><td class="py-2 px-3">12명 이하가 되면 1단계</td></tr>
-              <tr data-stage="3"><td class="py-2 px-3">25명 이상</td><td class="py-2 px-3">3단계</td><td class="py-2 px-3">100 %</td><td class="py-2 px-3">22명 이하가 되면 2단계</td></tr>
+              <tr data-stage="0"><td class="py-2 px-3">0–5명</td><td class="py-2 px-3">0단계</td><td class="py-2 px-3">30 % (최소 환기 유지)</td><td class="py-2 px-3">—</td></tr>
+              <tr data-stage="1"><td class="py-2 px-3">6–11명</td><td class="py-2 px-3">1단계</td><td class="py-2 px-3">50 %</td><td class="py-2 px-3">3명 이하가 되면 0단계</td></tr>
+              <tr data-stage="2"><td class="py-2 px-3">12–29명</td><td class="py-2 px-3">2단계</td><td class="py-2 px-3">75 %</td><td class="py-2 px-3">9명 이하가 되면 1단계</td></tr>
+              <tr data-stage="3"><td class="py-2 px-3">30명 이상</td><td class="py-2 px-3">3단계</td><td class="py-2 px-3">100 %</td><td class="py-2 px-3">27명 이하가 되면 2단계</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="mt-space-sm text-body-sm text-on-surface-variant">근거(가정): 1인당 발열량을 현열 약 75 W, 잠열 약 55 W로 보고, 인원이 늘수록 환기·냉방 필요량이 커지는 방향으로 단계를 정했습니다. 통신 두절·카메라 오류 시에는 마지막 안전 단계를 유지하거나 100 %로 복귀합니다.</p>
+        <p class="mt-space-sm text-body-sm text-on-surface-variant">근거: 대학 강의실 사용 유형(공실 0명, 소규모 과제 6명, 팀 두 개 12명, 정규 수업 30명)을 기준으로 단계를 정했습니다. 통신 두절·카메라 오류 시에는 마지막 안전 단계를 유지하거나 100 %로 복귀합니다.</p>
       </div>
     </div>
   </section>
@@ -742,7 +742,7 @@
         <div class="rounded-xl bg-surface-container p-space-lg">
           <div class="font-mono text-label-badge text-primary-container uppercase mb-space-md">개발 범위 (In Scope)</div>
           <ul class="space-y-space-sm text-body-sm">
-            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>카메라 영상 기반 실시간 사람 검출 (YOLO nano)</li>
+            <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>카메라 영상 기반 실시간 사람 검출 (YOLO26 nano)</li>
             <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>중복 제거 · 추적 · 방 영역 카운트 (supervision)</li>
             <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>인원 평활화와 팬 단계 결정 (히스테리시스 · 최소 유지시간)</li>
             <li class="flex gap-space-sm"><span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">check_circle</span>ESP32-S3를 통한 팬 속도 지령 출력 (0–10 V)</li>
@@ -1104,7 +1104,7 @@ function runPipeline(scene, mode) {
 })();
 
 // ===== 팬 단계 결정 로직 (PRD 기준표 + 히스테리시스 + 최소 유지시간) =====
-const STAGE_MIN = [0, 5, 15, 25];      // 단계별 최소 인원
+const STAGE_MIN = [0, 6, 12, 30];      // 단계별 최소 인원
 const STAGE_PCT = [30, 50, 75, 100];   // 단계별 풍량 지령 %
 const HYST = 2;                          // 내릴 때는 기준보다 2명 더 줄어야 함
 const tableStage = n => STAGE_MIN.reduce((s, min, i) => (n >= min ? i : s), 0);
