@@ -99,6 +99,7 @@
       <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#vision">영상 전처리</a>
       <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#yolo">YOLO 학습</a>
       <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#control">팬 제어</a>
+      <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#containers">컨테이너 설계</a>
       <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#metrics">성공 지표</a>
       <a class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#roi">ROI</a>
     </nav>
@@ -670,6 +671,93 @@
           </table>
         </div>
         <p class="mt-space-sm text-body-sm text-on-surface-variant">근거: 대학 강의실 사용 유형(공실 0명, 소규모 과제 6명, 팀 두 개 12명, 정규 수업 30명)을 기준으로 단계를 정했습니다. 통신 두절·카메라 오류 시에는 마지막 안전 단계를 유지하거나 100 %로 복귀합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5-1. 컨테이너 설계 ===== -->
+  <section class="py-16 lg:py-20 border-t border-white/5" id="containers">
+    <div class="max-w-6xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl mx-auto text-center mb-space-xl">
+        <span class="inline-block px-space-sm py-0.5 rounded-full bg-surface-variant text-primary font-mono text-label-badge uppercase mb-space-sm">Container Design</span>
+        <h2 class="font-display text-headline-lg-mobile md:text-headline-lg">컨테이너 4개, 통신은 MQTT 하나로</h2>
+        <p class="text-on-surface-variant mt-space-sm">Raspberry Pi 5 위에서 Docker 컨테이너 4개(+확장 1개)가 MQTT로만 통신합니다.</p>
+      </div>
+
+      <!-- 구조도 -->
+      <div class="rounded-xl bg-surface-container-low p-space-md md:p-space-lg border border-white/5">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-space-sm">
+          <div class="rounded-lg border border-dashed border-white/20 p-space-md text-center">
+            <span class="material-symbols-outlined text-on-surface-variant text-[22px]">videocam</span>
+            <div class="font-display text-headline-sm">카메라</div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant self-center"><span class="lg:hidden">arrow_downward</span><span class="hidden lg:inline">arrow_forward</span></span>
+          <div class="rounded-lg bg-surface-container p-space-md text-center">
+            <div class="font-mono text-label-mono-sm text-primary-container">camera-capture</div>
+            <div class="text-body-sm text-on-surface-variant">5 FPS 발행</div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant self-center"><span class="lg:hidden">arrow_downward</span><span class="hidden lg:inline">arrow_forward</span></span>
+          <div class="rounded-lg bg-surface-container p-space-md text-center border border-primary-container/30">
+            <div class="font-mono text-label-mono-sm text-primary-container">broker</div>
+            <div class="text-body-sm text-on-surface-variant">Mosquitto</div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant self-center"><span class="lg:hidden">arrow_downward</span><span class="hidden lg:inline">arrow_forward</span></span>
+          <div class="flex-1 flex flex-col gap-space-sm">
+            <div class="rounded-lg bg-surface-container p-space-sm px-space-md flex justify-between gap-3">
+              <span class="font-mono text-label-mono-sm text-secondary">vision-inference</span>
+              <span class="text-body-sm text-on-surface-variant text-right">인원 수 계산</span>
+            </div>
+            <div class="rounded-lg bg-surface-container p-space-sm px-space-md flex justify-between gap-3">
+              <span class="font-mono text-label-mono-sm text-secondary">fan-controller</span>
+              <span class="text-body-sm text-on-surface-variant text-right">팬 단계 결정</span>
+            </div>
+            <div class="rounded-lg border border-dashed border-white/20 p-space-sm px-space-md flex justify-between gap-3">
+              <span class="font-mono text-label-mono-sm text-tertiary-fixed-dim">ESP32-S3</span>
+              <span class="text-body-sm text-on-surface-variant text-right">Wi-Fi MQTT</span>
+            </div>
+          </div>
+        </div>
+        <p class="mt-space-md font-mono text-label-mono-sm text-on-surface-variant">실선 = Pi 5 안의 컨테이너 · 점선 = Pi 5 밖 장치</p>
+      </div>
+
+      <!-- 컨테이너 표 -->
+      <div class="mt-gutter-desktop rounded-xl bg-surface-container-low p-space-md md:p-space-lg overflow-x-auto">
+        <table class="w-full text-left text-body-sm min-w-[640px]">
+          <thead class="font-mono text-label-mono-sm text-on-surface-variant"><tr><th class="py-2 pr-3 font-normal">컨테이너</th><th class="py-2 pr-3 font-normal">역할</th><th class="py-2 pr-3 font-normal">죽으면 어떻게 되나</th><th class="py-2 font-normal">restart</th></tr></thead>
+          <tbody class="divide-y divide-white/5">
+            <tr><td class="py-3 pr-3 align-top font-mono whitespace-nowrap">camera-capture</td><td class="py-3 pr-3 text-on-surface-variant">영상 5 FPS 발행 · 카메라 장치만 연결</td><td class="py-3 pr-3 text-on-surface-variant">영상 발행이 멈춤</td><td class="py-3 font-mono whitespace-nowrap">always</td></tr>
+            <tr><td class="py-3 pr-3 align-top font-mono whitespace-nowrap">broker</td><td class="py-3 pr-3 text-on-surface-variant">Mosquitto · 모든 통신의 중심</td><td class="py-3 pr-3 text-on-surface-variant">모든 통신이 끊김 → ESP32가 일정 시간 뒤 100 %로 복귀</td><td class="py-3 font-mono whitespace-nowrap">always</td></tr>
+            <tr><td class="py-3 pr-3 align-top font-mono whitespace-nowrap">vision-inference</td><td class="py-3 pr-3 text-on-surface-variant">YOLO26n + ByteTrack + PolygonZone 인원 수 계산</td><td class="py-3 pr-3 text-on-surface-variant">죽어도 되는 AI 영역 — 규칙 컨테이너와 분리</td><td class="py-3 font-mono whitespace-nowrap">on-failure · mem_limit</td></tr>
+            <tr><td class="py-3 pr-3 align-top font-mono whitespace-nowrap">fan-controller</td><td class="py-3 pr-3 text-on-surface-variant">2초 중앙값 → 단계 표 → 히스테리시스 · 60초 유지</td><td class="py-3 pr-3 text-on-surface-variant">지령이 끊김 → ESP32가 일정 시간 뒤 100 %로 복귀</td><td class="py-3 font-mono whitespace-nowrap">always</td></tr>
+            <tr><td class="py-3 pr-3 align-top font-mono whitespace-nowrap">dashboard-api <span class="text-on-surface-variant">(확장)</span></td><td class="py-3 pr-3 text-on-surface-variant">FastAPI + WebSocket + SQLite + 알림</td><td class="py-3 pr-3 text-on-surface-variant">—</td><td class="py-3 font-mono whitespace-nowrap">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop mt-gutter-desktop">
+        <!-- 설계 원칙 -->
+        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter-desktop">
+          <div class="rounded-xl glass p-space-lg">
+            <div class="font-mono text-label-badge text-primary-container uppercase mb-1">원칙 ①</div>
+            <h3 class="font-display text-headline-sm mb-space-xs">AI와 규칙을 분리</h3>
+            <p class="text-body-sm text-on-surface-variant">AI(죽어도 됨)와 규칙(항상 살아 있어야 함)을 서로 다른 컨테이너로 나눕니다.</p>
+          </div>
+          <div class="rounded-xl glass p-space-lg">
+            <div class="font-mono text-label-badge text-secondary uppercase mb-1">원칙 ②</div>
+            <h3 class="font-display text-headline-sm mb-space-xs">안전 판단은 ESP32가</h3>
+            <p class="text-body-sm text-on-surface-variant">안전 판단은 Pi가 아니라 ESP32가 하고, 일정 시간 지령이 없으면 100 %로 복귀합니다.</p>
+          </div>
+        </div>
+        <!-- MQTT 토픽 -->
+        <div class="lg:col-span-4 rounded-xl bg-surface-container-high/40 p-space-lg">
+          <h3 class="font-display text-headline-sm mb-space-sm">MQTT 토픽</h3>
+          <ul class="space-y-space-xs font-mono text-label-mono-sm">
+            <li class="py-2 px-3 bg-surface-container/50 rounded">occufan/camera/frame</li>
+            <li class="py-2 px-3 bg-surface-container/50 rounded">occufan/count</li>
+            <li class="py-2 px-3 bg-surface-container/50 rounded">occufan/fan/cmd</li>
+            <li class="py-2 px-3 bg-surface-container/50 rounded">occufan/status</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
